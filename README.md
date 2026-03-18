@@ -1,3 +1,24 @@
+全局安装（推荐）
+
+  # 在项目目录执行
+  cd /home/bee/Project/koon-mcp
+  npm install -g .
+
+  配置 ~/.claude/settings.json：
+
+  {
+    "mcpServers": {
+      "koon-fetch": {
+        "command": "koon-mcp",
+        "env": {
+          "KOON_PROXY": "http://127.0.0.1:7890"
+        }
+      }
+    }
+  }
+
+
+
 # koon-mcp
 
 MCP server for Claude Code that fetches web content using real browser TLS/HTTP2 fingerprints. Bypasses Cloudflare, Akamai, and other bot detection systems that block standard HTTP clients.

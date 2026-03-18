@@ -1,8 +1,11 @@
 {
   "mcpServers": {
     "koon-fetch": {
-      "command": "npx",
-      "args": ["-y", "koon-mcp"]
+      "command": "node",
+      "args": ["/home/bee/Project/koon-mcp/build/index.js"],
+      "env": {
+        "KOON_PROXY": "http://192.168.88.115:10809"
+      }
     }
   }
 }

@@ -14,6 +14,7 @@ function getClient(): InstanceType<typeof Koon> {
       timeout: 30000,
       followRedirects: true,
       maxRedirects: 10,
+      proxy: process.env.KOON_PROXY,
     });
   }
   return client;
