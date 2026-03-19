@@ -1,6 +1,6 @@
 ---
 name: koon-fetch
-description: Browser-impersonating web fetch MCP server that bypasses Cloudflare, Akamai, and other bot detection. Use when Claude needs to fetch text content from URLs that may have anti-bot protection, including academic sites (IEEE, ACM), news sites, or any URL that returns 403/Challenge pages with standard fetch. Automatically converts HTML to markdown, handles cookies via CookieCloud, supports proxy configuration. IMPORTANT - Only fetches text content (markdown); does NOT download binary files like PDFs or images.
+description: Browser-impersonating web fetch MCP server that attempts to bypass Cloudflare, Akamai, and other bot detection. Use when Claude needs to fetch text content from URLs that may have anti-bot protection. Automatically converts HTML to markdown, handles cookies via CookieCloud, supports proxy configuration. IMPORTANT - Only fetches text content (markdown); does NOT download binary files like PDFs or images. NOTE - This tool cannot bypass Cloudflare interactive challenges (CAPTCHA/human verification pages). If fetching fails with 403 or challenge page, use alternative tools or ask the user for help.
 ---
 
 # Koon Fetch MCP Server
@@ -89,6 +89,12 @@ Use `koon-fetch` instead of `WebFetch` when:
 - Site uses Cloudflare, Akamai, or similar bot detection
 - Fetching academic papers (IEEE, ACM)
 - Need higher success rate on protected sites
+
+## Limitations
+
+**Cannot bypass interactive challenges**: Sites with active Cloudflare CAPTCHA/human verification (e.g., `*.acm.org` when showing challenge pages) cannot be fetched. If this tool returns a 403 error or challenge page, try:
+- Using the standard `WebFetch` tool instead
+- Asking the user to provide the content directly
 
 ## Response Format
 

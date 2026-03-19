@@ -118,14 +118,15 @@ Fetches content from a URL and returns clean markdown.
 ## Supported Sites
 
 - **General web** — Works without configuration
-- **IEEE Xplore** (`ieeexplore.ieee.org`) — Requires CookieCloud
-- **ACM Digital Library** (`dl.acm.org`) — Requires CookieCloud
+- **IEEE Xplore** (`ieeexplore.ieee.org`) — Requires CookieCloud (may still fail with active Cloudflare challenges)
+- **ACM Digital Library** (`dl.acm.org`) — Requires CookieCloud (may still fail with active Cloudflare challenges)
 
 ## Notes
 
 - **Text content only**: Only fetches HTML/markdown; does NOT download PDFs, images, or binary files
 - **15-minute cache**: Avoids redundant requests to same URL
 - **Cookie injection**: Automatic for configured domains
+- **Limitation**: Cannot bypass interactive Cloudflare challenges (CAPTCHA/human verification pages) on sites like `*.acm.org`. If fetching fails, try alternative methods or ask the user for the content.
 
 ## Requirements
 
