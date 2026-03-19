@@ -2,18 +2,19 @@
 
   # 在项目目录执行
   cd /home/bee/Project/koon-mcp
-  npm install -g .
+  npm run build
 
   配置 ~/.claude/settings.json：
 
   {
     "mcpServers": {
-      "koon-fetch": {
-        "command": "koon-mcp",
-        "env": {
-          "KOON_PROXY": "http://127.0.0.1:7890"
-        }
+    "koon-fetch": {
+      "command": "node",
+      "args": ["/home/bee/Project/koon-mcp/build/index.js"],
+      "env": {
+        "KOON_PROXY": "http://192.168.88.115:10809"
       }
+    }
     }
   }
 

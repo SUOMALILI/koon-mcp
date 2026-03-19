@@ -2,10 +2,20 @@ import koonjs from "koonjs";
 const { Koon } = koonjs;
 import { htmlToMarkdown } from "./html-to-markdown.js";
 import { cacheGet, cacheSet } from "./cache.js";
+import { fetchCookies, getCookiesForDomain, isCookieCloudEnabled } from "./cookie-cloud.js";
 
 const MAX_CONTENT_LENGTH = 100_000;
 
 let client: InstanceType<typeof Koon> | null = null;
+let cachedCookieData: any = null;
+
+/**
+ * Get proxy configuration from environment variables.
+ * Priority: CLAUDE_KOON_PROXY (from settings.json) > KOON_PROXY (from .mcp.json or system env)
+ */
+function getProxyConfig(): string | undefined {
+  return process.env.CLAUDE_KOON_PROXY || process.env.KOON_PROXY || undefined;
+}
 
 function getClient(): InstanceType<typeof Koon> {
   if (!client) {
@@ -14,10 +24,32 @@ function getClient(): InstanceType<typeof Koon> {
       timeout: 30000,
       followRedirects: true,
       maxRedirects: 10,
-      proxy: process.env.KOON_PROXY,
+      proxy: getProxyConfig(),
+      cookieJar: true,
+      randomize: true,
     });
   }
   return client;
+}
+
+async function getCookieClient(cookieString: string): Promise<InstanceType<typeof Koon>> {
+  // Create a new client with cookies in headers
+  const headers: Record<string, string> = {};
+
+  if (cookieString) {
+    headers['Cookie'] = cookieString;
+  }
+
+  return new Koon({
+    browser: "chrome145",
+    timeout: 45000,
+    followRedirects: true,
+    maxRedirects: 10,
+    proxy: getProxyConfig(),
+    cookieJar: true,
+    randomize: true,
+    headers,
+  });
 }
 
 export interface FetchResult {
@@ -49,8 +81,30 @@ export async function fetchUrl(url: string): Promise<FetchResult> {
     };
   }
 
-  const koon = getClient();
-  const resp = await koon.get(normalizedUrl);
+  let resp;
+  const domain = new URL(normalizedUrl).hostname;
+  const cookieCloudEnabled = isCookieCloudEnabled();
+
+  if (cookieCloudEnabled) {
+    // Try to fetch with cookies for any domain
+    if (!cachedCookieData) {
+      cachedCookieData = await fetchCookies();
+    }
+
+    const cookieString = cachedCookieData ? getCookiesForDomain(cachedCookieData, domain) : '';
+
+    if (cookieString) {
+      console.error(`[koon-mcp] Using cookies for ${domain}`);
+      const koon = await getCookieClient(cookieString);
+      resp = await koon.get(normalizedUrl);
+    } else {
+      const koon = getClient();
+      resp = await koon.get(normalizedUrl);
+    }
+  } else {
+    const koon = getClient();
+    resp = await koon.get(normalizedUrl);
+  }
 
   if (!resp.ok) {
     throw new Error(`HTTP ${resp.status} fetching ${resp.url}`);
