@@ -1,116 +1,135 @@
-全局安装（推荐）
-
-  # 在项目目录执行
-  cd /home/bee/Project/koon-mcp
-  npm run build
-
-  配置 ~/.claude/settings.json：
-
-  {
-    "mcpServers": {
-    "koon-fetch": {
-      "command": "node",
-      "args": ["/home/bee/Project/koon-mcp/build/index.js"],
-      "env": {
-        "KOON_PROXY": "http://192.168.88.115:10809"
-      }
-    }
-    }
-  }
-
-
-
 # koon-mcp
 
-MCP server for Claude Code that fetches web content using real browser TLS/HTTP2 fingerprints. Bypasses Cloudflare, Akamai, and other bot detection systems that block standard HTTP clients.
+MCP server for Claude Code that fetches web content using browser-impersonating HTTP client. Bypasses Cloudflare, Akamai, and other bot detection systems.
 
-Built on [koon](https://github.com/scrape-hub/koon) — a browser impersonation library using Rust + BoringSSL.
+Built on [koonjs](https://github.com/scrape-hub/koon) — a Rust + BoringSSL-based browser impersonation library.
 
-## Why?
+## Why
 
-Standard `fetch`, `curl`, or built-in web tools get blocked by bot detection on many popular websites (403 Forbidden, CAPTCHAs, empty responses). koon-mcp solves this by making requests that are indistinguishable from a real browser at the TLS and HTTP/2 protocol level.
+Standard HTTP clients get blocked by bot protection (403 Forbidden, CAPTCHAs). koon-mcp mimics real browser TLS/HTTP2 fingerprints to access protected content.
 
-| Site | Category | Standard fetch | koon-mcp |
-|---|---|---|---|
-| medium.com | Articles / Blog | 403 | Full content |
-| bloomberg.com | Financial news | 403 | Full content |
-| ticketmaster.com | Events / Tickets | 403 | Full content |
-| zillow.com | Real estate | 403 | Full content |
-| glassdoor.com | Jobs / Salaries | 403 | Full content |
-| stockx.com | E-Commerce | 403 | Full content |
-| tripadvisor.com | Travel / Reviews | 403 | Full content |
-| bestbuy.com | Electronics | Timeout | Full content |
-| nike.com | E-Commerce | JS skeleton only | Full content |
-| linkedin.com | Social / Jobs | Restricted | Full content |
+| Site | Standard fetch | koon-mcp |
+|------|---------------|----------|
+| medium.com | 403 | Full content |
+| bloomberg.com | 403 | Full content |
+| dl.acm.org | 403 | With cookies |
+| ieeexplore.ieee.org | 403 | With cookies |
 
 ## Features
 
-- **Browser impersonation** — Chrome, Firefox, Safari, Edge fingerprints (175+ profiles)
-- **HTML → Markdown** — Clean extraction using Readability + Turndown (no images, scripts, iframes)
-- **JSON handling** — Auto-formats JSON responses as fenced code blocks
-- **15-minute cache** — Self-cleaning in-memory cache to avoid redundant requests
-- **Content truncation** — Large pages capped at 100k characters to stay within context limits
-- **Auto HTTPS upgrade** — `http://` URLs are automatically upgraded to `https://`
+- **Browser impersonation** — Chrome 145 TLS/HTTP2 fingerprint
+- **Bot detection bypass** — Cloudflare, Akamai, DataDome, etc.
+- **CookieCloud support** — Access authenticated sites (IEEE, ACM)
+- **HTML → Markdown** — Clean extraction via Readability + Turndown
+- **15-minute cache** — Self-cleaning in-memory cache
+- **Content truncation** — Auto-truncate at 100k characters
+- **Proxy support** — HTTP/SOCKS5 via environment variable
+- **Auto HTTPS** — HTTP URLs auto-upgraded to HTTPS
 
-## Install as Claude Code Plugin
+## Install
+
+### As Claude Code Plugin
 
 ```bash
 claude plugin install koon-fetch
 ```
 
-Or add the marketplace first if not yet available in the official directory:
+Or from marketplace:
 
 ```bash
 claude plugin marketplace add scrape-hub/koon-mcp
 claude plugin install koon-fetch@scrape-hub/koon-mcp
 ```
 
-## Manual Setup
+### Manual Setup
 
-Add to your Claude Code MCP config (`~/.claude/settings.json` or project `.mcp.json`):
+Add to `~/.claude/settings.json` or project `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "koon-fetch": {
       "command": "npx",
-      "args": ["-y", "koon-mcp"]
+      "args": ["-y", "koon-mcp"],
+      "env": {
+        "CLAUDE_KOON_PROXY": "http://proxy:port",
+        "CLAUDE_COOKIE_CLOUD_URL": "http://cookie-cloud-server:port",
+        "CLAUDE_COOKIE_CLOUD_UUID": "your-uuid",
+        "CLAUDE_COOKIE_CLOUD_PASSWORD": "your-password"
+      }
     }
   }
 }
 ```
 
-## Tool
+## Configuration
 
-### `koon-fetch`
+### Proxy (Optional)
 
-Fetches a URL and returns the content as markdown.
+```json
+"env": {
+  "CLAUDE_KOON_PROXY": "http://proxy:port"
+}
+```
+
+### CookieCloud (Optional)
+
+For accessing sites requiring authentication (IEEE, ACM):
+
+```json
+"env": {
+  "CLAUDE_COOKIE_CLOUD_URL": "http://cookie-cloud-server:port",
+  "CLAUDE_COOKIE_CLOUD_UUID": "your-uuid",
+  "CLAUDE_COOKIE_CLOUD_PASSWORD": "your-password"
+}
+```
+
+**Priority:** `CLAUDE_*` prefixed variables override non-prefixed versions.
+
+## Tool: `koon-fetch`
+
+Fetches content from a URL and returns clean markdown.
 
 **Parameters:**
 
 | Name | Type | Required | Description |
-|---|---|---|---|
-| `url` | string | yes | The URL to fetch |
-| `prompt` | string | no | Hint for what information to extract |
+|------|------|----------|-------------|
+| `url` | string | yes | URL to fetch (HTTP auto-upgraded to HTTPS) |
+| `prompt` | string | no | Optional guidance for content extraction |
 
-**Example usage in Claude Code:**
+**Example:**
 
-> "Fetch the pricing page from example.com"
-
-Claude will call `koon-fetch` with `url: "https://example.com/pricing"` and return clean markdown content.
+```json
+{
+  "url": "https://example.com/article",
+  "prompt": "Extract the main thesis and key arguments"
+}
+```
 
 ## How It Works
 
-1. **koonjs** opens a TLS connection with a real browser fingerprint (JA3, AEAD, ALPN, HTTP/2 frames)
-2. The response HTML is parsed with **JSDOM**
-3. **Readability** extracts the main article content (falls back to full body)
-4. **Turndown** converts HTML to clean markdown
-5. Result is cached for 15 minutes
+1. **koonjs** opens TLS connection with browser fingerprint (JA3, HTTP/2 frames)
+2. Optional **CookieCloud** injects authentication cookies
+3. **JSDOM** parses response HTML
+4. **Readability** extracts main article content
+5. **Turndown** converts HTML to clean markdown
+6. Result cached for 15 minutes
+
+## Supported Sites
+
+- **General web** — Works without configuration
+- **IEEE Xplore** (`ieeexplore.ieee.org`) — Requires CookieCloud
+- **ACM Digital Library** (`dl.acm.org`) — Requires CookieCloud
+
+## Notes
+
+- **Text content only**: Only fetches HTML/markdown; does NOT download PDFs, images, or binary files
+- **15-minute cache**: Avoids redundant requests to same URL
+- **Cookie injection**: Automatic for configured domains
 
 ## Requirements
 
 - Node.js 18+
-- koon native binaries are bundled with `koonjs` (no extra install needed)
 
 ## License
 
