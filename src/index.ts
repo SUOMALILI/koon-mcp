@@ -11,7 +11,7 @@ const server = new McpServer({
 });
 
 server.registerTool(
-  "koon_fetch",
+  "koon-fetch",
   {
     title: "Koon Web Fetch",
     description:

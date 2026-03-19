@@ -82,7 +82,7 @@ Add to your Claude Code MCP config (`~/.claude/settings.json` or project `.mcp.j
 
 ## Tool
 
-### `koon_fetch`
+### `koon-fetch`
 
 Fetches a URL and returns the content as markdown.
 
@@ -97,7 +97,7 @@ Fetches a URL and returns the content as markdown.
 
 > "Fetch the pricing page from example.com"
 
-Claude will call `koon_fetch` with `url: "https://example.com/pricing"` and return clean markdown content.
+Claude will call `koon-fetch` with `url: "https://example.com/pricing"` and return clean markdown content.
 
 ## How It Works
 

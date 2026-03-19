@@ -1,6 +1,6 @@
 ---
 name: koon-fetch
-description: Browser-impersonating web fetch MCP server that bypasses Cloudflare, Akamai, and other bot detection. Use when Claude needs to fetch web content from URLs that may have anti-bot protection, including academic sites (IEEE, ACM), news sites, or any URL that returns 403/Challenge pages with standard fetch. Automatically converts HTML to markdown, handles cookies via CookieCloud, supports proxy configuration.
+description: Browser-impersonating web fetch MCP server that bypasses Cloudflare, Akamai, and other bot detection. Use when Claude needs to fetch text content from URLs that may have anti-bot protection, including academic sites (IEEE, ACM), news sites, or any URL that returns 403/Challenge pages with standard fetch. Automatically converts HTML to markdown, handles cookies via CookieCloud, supports proxy configuration. IMPORTANT - Only fetches text content (markdown); does NOT download binary files like PDFs or images.
 ---
 
 # Koon Fetch MCP Server
@@ -75,6 +75,7 @@ For accessing sites requiring authentication:
 
 ## Features
 
+- **Text content only**: Only fetches and returns HTML text converted to markdown; does NOT download PDFs, images, videos, or other binary files
 - **Browser impersonation**: Mimics Chrome/Firefox TLS and HTTP/2 fingerprints
 - **Auto markdown conversion**: HTML converted to clean markdown via Readability + Turndown
 - **15-minute cache**: Avoids redundant requests
@@ -83,7 +84,7 @@ For accessing sites requiring authentication:
 
 ## When to Use
 
-Use `koon_fetch` instead of `WebFetch` when:
+Use `koon-fetch` instead of `WebFetch` when:
 - URL returns 403/Challenge page with standard fetch
 - Site uses Cloudflare, Akamai, or similar bot detection
 - Fetching academic papers (IEEE, ACM)

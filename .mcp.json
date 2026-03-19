@@ -2,7 +2,7 @@
   "mcpServers": {
     "koon-fetch": {
       "command": "node",
-      "args": ["/home/bee/Project/koon-mcp/build/index.js"],
+      "args": ["/home/bee/Project/Agent/koon-mcp/build/index.js"],
       "env": {
         "KOON_PROXY": "http://192.168.88.115:10809",
         "COOKIE_CLOUD_URL": "http://192.168.88.192:8103",
